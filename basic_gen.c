@@ -49,6 +49,18 @@ char values[14] = {
 };
 
 char opera[9]={0};
+int soln_found = 0;
+
+float get_fitness(float target, float result){
+  float fitness;
+  if(target - result == 0){
+    soln_found =1;
+    printf("soln found \n");
+    return -1;
+  }
+  fitness = 1 / (target - result );
+  return fitness;
+}
 
 char decode(char * str){
     int i;
@@ -78,7 +90,7 @@ void get_operation(char * op)
     int cnt = 0;
     for(p=op; *(p+1) != '\0' ; p+=4){
       opera[cnt] = decode(p);
-      GEN_LOG("at get op index =%d %c \n",cnt, opera[cnt]);
+      //GEN_LOG("at get op index =%d %c \n",cnt, opera[cnt]);
       cnt++;
     }
     GEN_LOG("\n");
@@ -97,7 +109,7 @@ float solve(char *str){
       //cannot have 2 numbers in a row.
       if(state == S_NUM)
 	return -1;
-      GEN_LOG("number is %f\n",is_num);
+      //GEN_LOG("number is %f\n",is_num);
       if(i==0){
 	result+=is_num;
 	continue;
@@ -120,7 +132,7 @@ float solve(char *str){
       }
       state = S_NUM;
 
-      GEN_LOG("partial result =%f \n",result);
+      //GEN_LOG("partial result =%f \n",result);
       continue;
     }
     //GEN_LOG("op is %c \n",opera[i]);
@@ -144,13 +156,19 @@ float solve(char *str){
     }
   }
   GEN_LOG("result is %f \n",result);
-
+  return result;
 }
 
 int main()
 {
-  char* test = "011010100101110001001101001010100001";
+  char* chromosome1 = "011010100101110001001101001010100001";
+  char* chromosome2 = "011010100101110001111111111111111111";
+
+  float target = 22.0;
+  float check,fitness;
   //print_operation(test);
-    solve(test);
-    return 0;
+  check = solve(test);
+  fitness = get_fitness(target,check);
+  printf("fitness is %f \n",fitness);
+  return 0;
 }
