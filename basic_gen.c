@@ -7,6 +7,13 @@
 #define S_MUL 3
 #define S_DIV 4
 
+#define DEBUG
+#ifdef DEBUG
+#define GEN_LOG printf
+#else
+#define GEN_LOG(...)
+#endif
+
 char *operators[14] = {
     "0000",
     "0001",
@@ -49,7 +56,7 @@ char decode(char * str){
     char c = 'x';
     for(i=0 ; i < 14; i++){
         if(!strncmp(str,operators[i],4)){
-	  printf("%c \t",values[i]);
+	  GEN_LOG("%c \t",values[i]);
 	  c = values[i];
 	  return c;
         }
@@ -62,7 +69,7 @@ void print_operation(char * op)
     for(p=op; *(p+1) != '\0' ; p+=4){
         decode(p);
     }
-    printf("\n");
+    GEN_LOG("\n");
 }
 
 void get_operation(char * op)
@@ -71,10 +78,10 @@ void get_operation(char * op)
     int cnt = 0;
     for(p=op; *(p+1) != '\0' ; p+=4){
       opera[cnt] = decode(p);
-      printf("at get op index =%d %c \n",cnt, opera[cnt]);
+      GEN_LOG("at get op index =%d %c \n",cnt, opera[cnt]);
       cnt++;
     }
-    printf("\n");
+    GEN_LOG("\n");
 }
 
 int solve(char *str){
@@ -91,7 +98,7 @@ int solve(char *str){
       //cannot have 2 numbers in a row.
       if(state == S_NUM)
 	return -1;
-      printf("number is %d\n",is_num);
+      GEN_LOG("number is %d\n",is_num);
       if(i==0){
 	result+=is_num;
 	continue;
@@ -114,10 +121,10 @@ int solve(char *str){
       }
       state = S_NUM;
 
-      printf("partial result =%d \n",result);
+      GEN_LOG("partial result =%d \n",result);
       continue;
     }
-    //printf("op is %c \n",opera[i]);
+    //GEN_LOG("op is %c \n",opera[i]);
     //cannot have 2 operators in a row.
     switch(opera[i]){
     case '+':
@@ -133,11 +140,11 @@ int solve(char *str){
       state = S_DIV;
       break;
     default:
-      printf("unknown ascii\n");
+      GEN_LOG("unknown ascii\n");
       break;
     }
   }
-  printf("result is %d \n",result);
+  GEN_LOG("result is %d \n",result);
 
 }
 
