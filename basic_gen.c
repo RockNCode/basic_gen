@@ -84,21 +84,20 @@ void get_operation(char * op)
     GEN_LOG("\n");
 }
 
-int solve(char *str){
-  int result = 0;
-  int cur_num = 0;
+float solve(char *str){
+  float result = 0;
   int i = 0;
   int state=-1;
   int k=0;
   get_operation(str);
 
   for(i=0; i<9; i++){
-    int is_num = opera[i] - '0';
-    if(is_num >= 0 && is_num <= 9){
+    float is_num = (float)(opera[i] - '0');
+    if(is_num >= 0.0f && is_num <= 9.0f){
       //cannot have 2 numbers in a row.
       if(state == S_NUM)
 	return -1;
-      GEN_LOG("number is %d\n",is_num);
+      GEN_LOG("number is %f\n",is_num);
       if(i==0){
 	result+=is_num;
 	continue;
@@ -121,7 +120,7 @@ int solve(char *str){
       }
       state = S_NUM;
 
-      GEN_LOG("partial result =%d \n",result);
+      GEN_LOG("partial result =%f \n",result);
       continue;
     }
     //GEN_LOG("op is %c \n",opera[i]);
@@ -144,14 +143,14 @@ int solve(char *str){
       break;
     }
   }
-  GEN_LOG("result is %d \n",result);
+  GEN_LOG("result is %f \n",result);
 
 }
 
 int main()
 {
-    char* test ="011010100101110001001101001010100001";
-    //print_operation(test);
+  char* test = "011010100101110001001101001010100001";
+  //print_operation(test);
     solve(test);
     return 0;
 }
