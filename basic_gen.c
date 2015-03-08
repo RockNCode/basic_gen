@@ -41,43 +41,103 @@ char values[14] = {
     '/'
 };
 
-int decode(char * str){
+char opera[9]={0};
+
+char decode(char * str){
     int i;
+    int count=0;
+    char c = 'x';
     for(i=0 ; i < 14; i++){
         if(!strncmp(str,operators[i],4)){
-	  //printf("%c \t",values[i]);
-            return i;
+	  printf("%c \t",values[i]);
+	  c = values[i];
+	  return c;
         }
     }
 }
 
 void print_operation(char * op)
 {
-    char *p =op;
+    char *p = op;
     for(p=op; *(p+1) != '\0' ; p+=4){
         decode(p);
     }
     printf("\n");
 }
 
+void get_operation(char * op)
+{
+    char *p =op;
+    int cnt = 0;
+    for(p=op; *(p+1) != '\0' ; p+=4){
+      opera[cnt] = decode(p);
+      printf("at get op index =%d %c \n",cnt, opera[cnt]);
+      cnt++;
+    }
+    printf("\n");
+}
+
 int solve(char *str){
   int result = 0;
-  int num = 0;
-  int it=0;
+  int cur_num = 0;
+  int i = 0;
   int state=-1;
-  char *p = str;
-  for(p=str; *(p+1) != '\0' ; p+=4){
-    int index = decode(str);
-    if(index < 9){
-      //printf("index is less than 9 for %d \n",index);
-      //get ascii translation
-      num = values[index] - '0';
-      printf("number is %d",index);
-      state = 0;
-      //continue;
+  int k=0;
+  get_operation(str);
+
+  for(i=0; i<9; i++){
+    int is_num = opera[i] - '0';
+    if(is_num >= 0 && is_num <= 9){
+      //cannot have 2 numbers in a row.
+      if(state == S_NUM)
+	return -1;
+      printf("number is %d\n",is_num);
+      if(i==0){
+	result+=is_num;
+	continue;
+      }
+      switch(state){
+      case S_SUM:
+	result+= is_num;
+	break;
+      case S_RES:
+	result-= is_num;
+	break;
+      case S_MUL:
+	result*= is_num;
+	break;
+      case S_DIV:
+	result/= is_num;
+	break;
+      default:
+	break;
+      }
+      state = S_NUM;
+
+      printf("partial result =%d \n",result);
+      continue;
     }
-    it++;
-  } 
+    //printf("op is %c \n",opera[i]);
+    //cannot have 2 operators in a row.
+    switch(opera[i]){
+    case '+':
+      state = S_SUM;
+      break;
+    case '-':
+      state = S_RES;
+      break;
+    case '*':
+      state = S_MUL;
+      break;
+    case '/':
+      state = S_DIV;
+      break;
+    default:
+      printf("unknown ascii\n");
+      break;
+    }
+  }
+  printf("result is %d \n",result);
 
 }
 
