@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+
 #define S_NUM 0
 #define S_SUM 1
 #define S_RES 2
@@ -57,15 +58,64 @@ char gene_values[14] = {
 char opera[9]={0};
 int soln_found = 0;
 
-
-void create_pool()
-{
+void msleep (unsigned int ms) {
+    int microsecs;
+    struct timeval tv;
+    microsecs = ms * 1000;
+    tv.tv_sec  = microsecs / 1000000;
+    tv.tv_usec = microsecs % 1000000;
+    select (0, NULL, NULL, NULL, &tv);  
 }
 
 int get_rand(int max)
 {
-  srand (time(NULL));
-  return rand() % max;
+  int mrand;
+  static int init =0;
+  if(!init){
+    srand (time(NULL));
+    init =1;
+  }
+  mrand = rand() % max;
+
+  return mrand;
+}
+
+// generate a random list of chromosomes.
+void generate_chromosome(char* chromo){
+  int i;
+  int is_num=1;
+  int m_rand;
+  for (i=0; i<9;i++){
+    //msleep(100);
+    if(is_num){
+      //get from the numbers pool
+      m_rand = get_rand(9);
+      strcpy(chromo+i*4,genes[m_rand]);
+      is_num=0;
+    }else{
+      //get from the operator pool
+      m_rand = get_rand(3) + 10;
+      strcpy(chromo+i*4,genes[m_rand]);
+      is_num=1;
+    }
+  }
+}
+
+void create_pool()
+{
+  int i;
+  for(i=0; i < CHROMOSOME_NUM; i++){
+    chromosomepool[i] = (char*)malloc(9*4*sizeof(char));
+    generate_chromosome(chromosomepool[i]);
+  }
+}
+
+void free_pool()
+{
+  int i;
+  for(i=0; i < CHROMOSOME_NUM; i++){
+    free(chromosomepool[i]);
+  }
 }
 
 
@@ -80,10 +130,6 @@ float get_fitness(float target, float result){
   return fitness;
 }
 
-// generate a random list of chromosomes.
-void generate_chromosome(){
-}
-
 //cross over 2 chromosomes and produce an offspring.
 char* cross_over(char* chromosome1, char* chromosome2, int position){
 
@@ -92,7 +138,7 @@ char* cross_over(char* chromosome1, char* chromosome2, int position){
 void mutate(){
 }
 
-void select(){
+void natural_select(){
 }
 
 char decode(char * str){
@@ -194,15 +240,14 @@ float solve(char *str){
 
 int main()
 {
-  char* chromosome1 = "011010100101110001001101001010100001";
-  char* chromosome2 = "011010100101110001111111111111111111";
+  create_pool();
 
-  float target = 22.0;
-  float check,fitness;
-  //print_operation(test);
-  check = solve(chromosome1);
-  fitness = get_fitness(target,check);
-  printf("fitness is %f \n",fitness);
-  printf("rand =%d \n",get_rand(9));
+  int i;
+  for(i=0; i < CHROMOSOME_NUM; i++){
+    //printf(" chromo %d = %s  \n ",i,chromosomepool[i]);
+    solve(chromosomepool[i]);
+    //sleep(1);
+  }
+  free_pool;
   return 0;
 }
