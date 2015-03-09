@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define S_NUM 0
 #define S_SUM 1
 #define S_RES 2
 #define S_MUL 3
 #define S_DIV 4
+
+//Genetic
+#define CHROMOSOME_NUM 10
 
 #define DEBUG
 #ifdef DEBUG
@@ -14,7 +18,9 @@
 #define GEN_LOG(...)
 #endif
 
-char *operators[14] = {
+char *chromosomepool[CHROMOSOME_NUM];
+
+char *genes[14] = {
     "0000",
     "0001",
     "0010",
@@ -31,7 +37,7 @@ char *operators[14] = {
     "1101"
 };
 
-char values[14] = {
+char gene_values[14] = {
     '0',
     '1',
     '2',
@@ -51,6 +57,18 @@ char values[14] = {
 char opera[9]={0};
 int soln_found = 0;
 
+
+void create_pool()
+{
+}
+
+int get_rand(int max)
+{
+  srand (time(NULL));
+  return rand() % max;
+}
+
+
 float get_fitness(float target, float result){
   float fitness;
   if(target - result == 0){
@@ -62,14 +80,29 @@ float get_fitness(float target, float result){
   return fitness;
 }
 
+// generate a random list of chromosomes.
+void generate_chromosome(){
+}
+
+//cross over 2 chromosomes and produce an offspring.
+char* cross_over(char* chromosome1, char* chromosome2, int position){
+
+}
+
+void mutate(){
+}
+
+void select(){
+}
+
 char decode(char * str){
     int i;
     int count=0;
     char c = 'x';
     for(i=0 ; i < 14; i++){
-        if(!strncmp(str,operators[i],4)){
-	  GEN_LOG("%c \t",values[i]);
-	  c = values[i];
+        if(!strncmp(str,genes[i],4)){
+	  GEN_LOG("%c \t",gene_values[i]);
+	  c = gene_values[i];
 	  return c;
         }
     }
@@ -136,7 +169,7 @@ float solve(char *str){
       continue;
     }
     //GEN_LOG("op is %c \n",opera[i]);
-    //cannot have 2 operators in a row.
+    //cannot have 2 goperators in a row.
     switch(opera[i]){
     case '+':
       state = S_SUM;
@@ -167,8 +200,9 @@ int main()
   float target = 22.0;
   float check,fitness;
   //print_operation(test);
-  check = solve(test);
+  check = solve(chromosome1);
   fitness = get_fitness(target,check);
   printf("fitness is %f \n",fitness);
+  printf("rand =%d \n",get_rand(9));
   return 0;
 }
