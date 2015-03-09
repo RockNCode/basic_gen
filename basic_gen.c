@@ -239,16 +239,27 @@ float solve(char *str){
     return result;
 }
 
+void swap(int index1, int index2, int start){
+    int cpy_size =9*4-start;
+    char temp[cpy_size];
+    strncpy(temp,chromosomepool[index1] + start,cpy_size);
+    strncpy(chromosomepool[index1] + start, chromosomepool[index2] + start, cpy_size);
+    strncpy(chromosomepool[index2] + start, temp, cpy_size);
+}
+
 int main()
 {
+    int i;
+
     create_pool();
 
-    int i;
     for(i=0; i < CHROMOSOME_NUM; i++){
-        //printf(" chromo %d = %s  \n ",i,chromosomepool[i]);
+        printf(" chromo %d = %s  \n ",i,chromosomepool[i]);
         solve(chromosomepool[i]);
         //sleep(1);
     }
+
     free_pool;
+
     return 0;
 }
