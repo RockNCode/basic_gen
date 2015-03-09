@@ -11,6 +11,7 @@
 
 //Genetic
 #define CHROMOSOME_NUM 10
+#define GENERATIONS 10
 
 #define DEBUG
 #ifdef DEBUG
@@ -64,70 +65,70 @@ void msleep (unsigned int ms) {
     microsecs = ms * 1000;
     tv.tv_sec  = microsecs / 1000000;
     tv.tv_usec = microsecs % 1000000;
-    select (0, NULL, NULL, NULL, &tv);  
+    select (0, NULL, NULL, NULL, &tv);
 }
 
 int get_rand(int max)
 {
-  int mrand;
-  static int init =0;
-  if(!init){
-    srand (time(NULL));
-    init =1;
-  }
-  mrand = rand() % max;
+    int mrand;
+    static int init =0;
+    if(!init){
+        srand (time(NULL));
+        init =1;
+    }
+    mrand = rand() % max;
 
-  return mrand;
+    return mrand;
 }
 
 // generate a random list of chromosomes.
 void generate_chromosome(char* chromo){
-  int i;
-  int is_num=1;
-  int m_rand;
-  for (i=0; i<9;i++){
-    //msleep(100);
-    if(is_num){
-      //get from the numbers pool
-      m_rand = get_rand(9);
-      strcpy(chromo+i*4,genes[m_rand]);
-      is_num=0;
-    }else{
-      //get from the operator pool
-      m_rand = get_rand(3) + 10;
-      strcpy(chromo+i*4,genes[m_rand]);
-      is_num=1;
+    int i;
+    int is_num=1;
+    int m_rand;
+    for (i=0; i<9;i++){
+        //msleep(100);
+        if(is_num){
+            //get from the numbers pool
+            m_rand = get_rand(9);
+            strcpy(chromo+i*4,genes[m_rand]);
+            is_num=0;
+        }else{
+            //get from the operator pool
+            m_rand = get_rand(3) + 10;
+            strcpy(chromo+i*4,genes[m_rand]);
+            is_num=1;
+        }
     }
-  }
 }
 
 void create_pool()
 {
-  int i;
-  for(i=0; i < CHROMOSOME_NUM; i++){
-    chromosomepool[i] = (char*)malloc(9*4*sizeof(char));
-    generate_chromosome(chromosomepool[i]);
-  }
+    int i;
+    for(i=0; i < CHROMOSOME_NUM; i++){
+        chromosomepool[i] = (char*)malloc(9*4*sizeof(char));
+        generate_chromosome(chromosomepool[i]);
+    }
 }
 
 void free_pool()
 {
-  int i;
-  for(i=0; i < CHROMOSOME_NUM; i++){
-    free(chromosomepool[i]);
-  }
+    int i;
+    for(i=0; i < CHROMOSOME_NUM; i++){
+        free(chromosomepool[i]);
+    }
 }
 
 
 float get_fitness(float target, float result){
-  float fitness;
-  if(target - result == 0){
-    soln_found =1;
-    printf("soln found \n");
-    return -1;
-  }
-  fitness = 1 / (target - result );
-  return fitness;
+    float fitness;
+    if(target - result == 0){
+        soln_found =1;
+        printf("soln found \n");
+        return -1;
+    }
+    fitness = 1 / (target - result );
+    return fitness;
 }
 
 //cross over 2 chromosomes and produce an offspring.
@@ -147,9 +148,9 @@ char decode(char * str){
     char c = 'x';
     for(i=0 ; i < 14; i++){
         if(!strncmp(str,genes[i],4)){
-	  GEN_LOG("%c \t",gene_values[i]);
-	  c = gene_values[i];
-	  return c;
+            GEN_LOG("%c \t",gene_values[i]);
+            c = gene_values[i];
+            return c;
         }
     }
 }
@@ -168,86 +169,86 @@ void get_operation(char * op)
     char *p =op;
     int cnt = 0;
     for(p=op; *(p+1) != '\0' ; p+=4){
-      opera[cnt] = decode(p);
-      //GEN_LOG("at get op index =%d %c \n",cnt, opera[cnt]);
-      cnt++;
+        opera[cnt] = decode(p);
+        //GEN_LOG("at get op index =%d %c \n",cnt, opera[cnt]);
+        cnt++;
     }
     GEN_LOG("\n");
 }
 
 float solve(char *str){
-  float result = 0;
-  int i = 0;
-  int state=-1;
-  int k=0;
-  get_operation(str);
+    float result = 0;
+    int i = 0;
+    int state=-1;
+    int k=0;
+    get_operation(str);
 
-  for(i=0; i<9; i++){
-    float is_num = (float)(opera[i] - '0');
-    if(is_num >= 0.0f && is_num <= 9.0f){
-      //cannot have 2 numbers in a row.
-      if(state == S_NUM)
-	return -1;
-      //GEN_LOG("number is %f\n",is_num);
-      if(i==0){
-	result+=is_num;
-	continue;
-      }
-      switch(state){
-      case S_SUM:
-	result+= is_num;
-	break;
-      case S_RES:
-	result-= is_num;
-	break;
-      case S_MUL:
-	result*= is_num;
-	break;
-      case S_DIV:
-	result/= is_num;
-	break;
-      default:
-	break;
-      }
-      state = S_NUM;
+    for(i=0; i<9; i++){
+        float is_num = (float)(opera[i] - '0');
+        if(is_num >= 0.0f && is_num <= 9.0f){
+            //cannot have 2 numbers in a row.
+            if(state == S_NUM)
+                return -1;
+            //GEN_LOG("number is %f\n",is_num);
+            if(i==0){
+                result+=is_num;
+                continue;
+            }
+            switch(state){
+                case S_SUM:
+                    result+= is_num;
+                    break;
+                case S_RES:
+                    result-= is_num;
+                    break;
+                case S_MUL:
+                    result*= is_num;
+                    break;
+                case S_DIV:
+                    result/= is_num;
+                    break;
+                default:
+                    break;
+            }
+            state = S_NUM;
 
-      //GEN_LOG("partial result =%f \n",result);
-      continue;
+            //GEN_LOG("partial result =%f \n",result);
+            continue;
+        }
+        //GEN_LOG("op is %c \n",opera[i]);
+        //cannot have 2 goperators in a row.
+        switch(opera[i]){
+            case '+':
+                state = S_SUM;
+                break;
+            case '-':
+                state = S_RES;
+                break;
+            case '*':
+                state = S_MUL;
+                break;
+            case '/':
+                state = S_DIV;
+                break;
+            default:
+                GEN_LOG("unknown ascii\n");
+                break;
+        }
     }
-    //GEN_LOG("op is %c \n",opera[i]);
-    //cannot have 2 goperators in a row.
-    switch(opera[i]){
-    case '+':
-      state = S_SUM;
-      break;
-    case '-':
-      state = S_RES;
-      break;
-    case '*':
-      state = S_MUL;
-      break;
-    case '/':
-      state = S_DIV;
-      break;
-    default:
-      GEN_LOG("unknown ascii\n");
-      break;
-    }
-  }
-  GEN_LOG("result is %f \n",result);
-  return result;
+    GEN_LOG("result is %f \n",result);
+    return result;
 }
 
 int main()
 {
-  create_pool();
+    create_pool();
 
-  int i;
-  for(i=0; i < CHROMOSOME_NUM; i++){
-    //printf(" chromo %d = %s  \n ",i,chromosomepool[i]);
-    solve(chromosomepool[i]);
-    //sleep(1);
-  }
-  free_pool;
-  return 0;
+    int i;
+    for(i=0; i < CHROMOSOME_NUM; i++){
+        //printf(" chromo %d = %s  \n ",i,chromosomepool[i]);
+        solve(chromosomepool[i]);
+        //sleep(1);
+    }
+    free_pool;
+    return 0;
 }
