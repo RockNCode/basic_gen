@@ -131,12 +131,29 @@ float get_fitness(float target, float result){
     return fitness;
 }
 
+void swap(int index1, int index2, int start){
+    int cpy_size =9*4-start;
+    char temp[cpy_size];
+    strncpy(temp,chromosomepool[index1] + start,cpy_size);
+    strncpy(chromosomepool[index1] + start, chromosomepool[index2] + start, cpy_size);
+    strncpy(chromosomepool[index2] + start, temp, cpy_size);
+}
+
 //cross over 2 chromosomes and produce an offspring.
 char* cross_over(char* chromosome1, char* chromosome2, int position){
 
 }
 
-void mutate(){
+void mutate(int index, int bitposition){
+    
+    char c_mutate = *(chromosomepool[index] + bitposition);
+
+    if(c_mutate == '0')
+        c_mutate = '1';
+    else
+        c_mutate = '0';
+
+    memset(chromosomepool[index] + bitposition,c_mutate, 1 );
 }
 
 void natural_select(){
@@ -239,14 +256,6 @@ float solve(char *str){
     return result;
 }
 
-void swap(int index1, int index2, int start){
-    int cpy_size =9*4-start;
-    char temp[cpy_size];
-    strncpy(temp,chromosomepool[index1] + start,cpy_size);
-    strncpy(chromosomepool[index1] + start, chromosomepool[index2] + start, cpy_size);
-    strncpy(chromosomepool[index2] + start, temp, cpy_size);
-}
-
 int main()
 {
     int i;
@@ -259,7 +268,7 @@ int main()
         //sleep(1);
     }
 
-    free_pool;
+    free_pool();
 
     return 0;
 }
