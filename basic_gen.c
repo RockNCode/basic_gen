@@ -11,11 +11,11 @@
 
 //Genetic
 #define CHROMOSOME_NUM 10
-#define GENERATIONS 10
+#define GENERATIONS 100
 #define CROSS_RATE 0.7
 #define MUTATION_RATE 0.001
 
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
 #define GEN_LOG printf
 #else
@@ -64,7 +64,9 @@ float roulette[CHROMOSOME_NUM];
 
 char opera[9]={0};
 int soln_found = 0;
+int index_of_soln = -1;
 float total_score = 0;
+int error = 0;
 //function prototypes
 float solve(char *str);
 
@@ -148,7 +150,19 @@ void assign_fitness(float target){
     total_score =0;
     for(i=0; i < CHROMOSOME_NUM; i++){
         res = solve(chromosomepool[i]);
-        fitness_score[i] = fabs(get_fitness(target,res));
+        if(!error){
+            fitness_score[i] = fabs(get_fitness(target,res));
+            if(soln_found){
+                index_of_soln = i;
+                break;
+            }
+        }
+        else{
+            // operation is not good, fitness score should be small
+            // to reduce chances of survival
+            fitness_score[i] = 0;
+            error = 0;
+        }
         total_score += fitness_score[i];
     }
 
@@ -172,11 +186,6 @@ void swap(int index1, int index2, int start){
     strncpy(temp,chromosomepool[index1] + start,cpy_size);
     strncpy(chromosomepool[index1] + start, chromosomepool[index2] + start, cpy_size);
     strncpy(chromosomepool[index2] + start, temp, cpy_size);
-}
-
-//cross over 2 chromosomes and produce an offspring.
-char* cross_over(char* chromosome1, char* chromosome2, int position){
-
 }
 
 void mutate_chromosome(int index){
@@ -203,7 +212,6 @@ char decode(char * str){
     char c = 'x';
     for(i=0 ; i < 14; i++){
         if(!strncmp(str,genes[i],4)){
-            GEN_LOG("%c \t",gene_values[i]);
             c = gene_values[i];
             return c;
         }
@@ -213,10 +221,12 @@ char decode(char * str){
 void print_operation(char * op)
 {
     char *p = op;
+    char c;
     for(p=op; *(p+1) != '\0' ; p+=4){
-        decode(p);
+        c = decode(p);
+        printf(" %c \t ", c);
     }
-    GEN_LOG("\n");
+    printf("\n");
 }
 
 void get_operation(char * op)
@@ -242,8 +252,11 @@ float solve(char *str){
         float is_num = (float)(opera[i] - '0');
         if(is_num >= 0.0f && is_num <= 9.0f){
             //cannot have 2 numbers in a row.
-            if(state == S_NUM)
+            if(state == S_NUM){
+                GEN_LOG("2 numbers in a row\n");
+                error = 1;
                 return -1;
+            }
             //GEN_LOG("number is %f\n",is_num);
             if(i==0){
                 result+=is_num;
@@ -260,6 +273,10 @@ float solve(char *str){
                     result*= is_num;
                     break;
                 case S_DIV:
+                    if(is_num == 0){
+                        error = 1;
+                        return -1;
+                    }
                     result/= is_num;
                     break;
                 default:
@@ -286,6 +303,7 @@ float solve(char *str){
                 state = S_DIV;
                 break;
             default:
+                error = 1;
                 GEN_LOG("unknown ascii\n");
                 break;
         }
@@ -299,7 +317,6 @@ void getMates(int * mate1, int * mate2){
     float rand1 = (float)get_rand(1000)*.001;
     float rand2 = (float)get_rand(1000)*.001;
     int i,found = 0;
-    printf("rand1 =%f rand2 =%f \n",rand1,rand2);
 
     for(i=0 ; i < CHROMOSOME_NUM ; i++){
         if(i == 0){
@@ -330,31 +347,36 @@ void getMates(int * mate1, int * mate2){
 
 int main()
 {
-    int i;
-
+    int i,j;
+    float target = 7.0f;
+    float rand_crossover;
     create_pool();
-    assign_fitness(42.0f);
-    for (i=0; i<CHROMOSOME_NUM; i++){
-        printf("Fitness score[%d] = %f \n",i,fitness_score[i]);
+
+    for(i = 0; i < GENERATIONS; i++){
+        if(soln_found){
+            printf("solution has been found for target %f !!!! \n",target);
+            printf(" chromosome = %s at generation %d \n", chromosomepool[index_of_soln],i);
+            print_operation(chromosomepool[index_of_soln]);
+            break;
+        }
+
+        assign_fitness(target);
+        assign_prob();
+
+        for(j = 0; j < CHROMOSOME_NUM/2 ; j++){
+            int mate1_index,mate2_index;
+            float rand_crossover = (float)get_rand(1000)*.001;
+            if( rand_crossover <= CROSS_RATE){
+                int start_cross = get_rand(9*4);
+                //spin the wheel to get 2 mates
+                getMates(&mate1_index,&mate2_index);
+                swap(mate1_index,mate2_index,start_cross);
+                mutate_chromosome(mate1_index);
+                mutate_chromosome(mate2_index);
+            }
+        }
     }
-    assign_prob();
-    for (i=0; i<CHROMOSOME_NUM; i++){
-        printf("roulette[%d] = %f \n",i,roulette[i]);
-    }
-    //Start genetic algorithm
-
-    int mate1_index,mate2_index;
-
-    getMates(&mate1_index,&mate2_index);
-
-    printf("mate1 = %d mate2 =%d \n",mate1_index,mate2_index);
-
-    //swap(mate1_index,mate2_index,18);
-    printf(" %s \n",chromosomepool[0]);
-    //testing chromosome 0 for mutation
-    mutate_chromosome(0);
-
-    printf(" %s \n",chromosomepool[0]);
+    //printf(" %s \n",chromosomepool[0]);
     //printf(" %s \n",chromosomepool[1]);
 
     free_pool();
