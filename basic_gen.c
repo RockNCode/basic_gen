@@ -11,7 +11,7 @@
 
 //Genetic
 #define CHROMOSOME_NUM 10
-#define GENERATIONS 100
+#define GENERATIONS 500
 #define CROSS_RATE 0.7
 #define MUTATION_RATE 0.001
 
@@ -244,7 +244,7 @@ void get_operation(char * op)
 float solve(char *str){
     float result = 0;
     int i = 0;
-    int state=-1;
+    int state = -1;
     int k=0;
     get_operation(str);
 
@@ -259,7 +259,8 @@ float solve(char *str){
             }
             //GEN_LOG("number is %f\n",is_num);
             if(i==0){
-                result+=is_num;
+                result += is_num;
+                state = S_NUM;
                 continue;
             }
             switch(state){
@@ -287,6 +288,13 @@ float solve(char *str){
             //GEN_LOG("partial result =%f \n",result);
             continue;
         }
+
+        if( state == -1 || state != S_NUM ){
+            GEN_LOG("Cannot have an operator at the beginning/in a row \n");
+            error = 1;
+            return -1;
+        }
+
         //GEN_LOG("op is %c \n",opera[i]);
         //cannot have 2 goperators in a row.
         switch(opera[i]){
@@ -353,14 +361,13 @@ int main()
     create_pool();
 
     for(i = 0; i < GENERATIONS; i++){
+        assign_fitness(target);
         if(soln_found){
             printf("solution has been found for target %f !!!! \n",target);
             printf(" chromosome = %s at generation %d \n", chromosomepool[index_of_soln],i);
             print_operation(chromosomepool[index_of_soln]);
             break;
         }
-
-        assign_fitness(target);
         assign_prob();
 
         for(j = 0; j < CHROMOSOME_NUM/2 ; j++){
@@ -376,8 +383,9 @@ int main()
             }
         }
     }
-    //printf(" %s \n",chromosomepool[0]);
-    //printf(" %s \n",chromosomepool[1]);
+    if(!soln_found){
+        printf("Solution not found with the given parameters\n");
+    }
 
     free_pool();
 
