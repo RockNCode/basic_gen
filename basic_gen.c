@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
+#include <math.h>
 
 #define S_NUM 0
 #define S_SUM 1
@@ -12,6 +12,8 @@
 //Genetic
 #define CHROMOSOME_NUM 10
 #define GENERATIONS 10
+#define CROSS_RATE 0.7
+#define MUTATION_RATE 0.001
 
 #define DEBUG
 #ifdef DEBUG
@@ -56,8 +58,14 @@ char gene_values[14] = {
     '/'
 };
 
+float fitness_score[CHROMOSOME_NUM];
+float fitness_prob[CHROMOSOME_NUM];
+
 char opera[9]={0};
 int soln_found = 0;
+float total_prob = 0;
+//function prototypes
+float solve(char *str);
 
 void msleep (unsigned int ms) {
     int microsecs;
@@ -122,13 +130,35 @@ void free_pool()
 
 float get_fitness(float target, float result){
     float fitness;
+
     if(target - result == 0){
         soln_found =1;
-        printf("soln found \n");
-        return -1;
+        return 0;
     }
-    fitness = 1 / (target - result );
+
+    fitness = 1.0f / (target - result );
+    total_prob += fitness;
     return fitness;
+}
+
+void assign_fitness(float target){
+    int i;
+    float res;
+    total_prob =0;
+    for(i=0; i < CHROMOSOME_NUM; i++){
+        res = solve(chromosomepool[i]);
+        fitness_score[i] = get_fitness(target,res);
+    }
+
+}
+
+void assign_prob()
+{
+    int i;
+
+    for(i=0; i < CHROMOSOME_NUM; i++){
+        fitness_prob[i] = fitness_score[i]/total_prob;
+    }
 }
 
 void swap(int index1, int index2, int start){
@@ -261,12 +291,15 @@ int main()
     int i;
 
     create_pool();
-
-    for(i=0; i < CHROMOSOME_NUM; i++){
-        printf(" chromo %d = %s  \n ",i,chromosomepool[i]);
-        solve(chromosomepool[i]);
-        //sleep(1);
+    assign_fitness(42.0f);
+    for (i=0; i<CHROMOSOME_NUM; i++){
+        printf("Fitness score[%d] = %f \n",i,fitness_score[i]);
     }
+    assign_prob();
+    for (i=0; i<CHROMOSOME_NUM; i++){
+        printf("Fitness prob[%d] = %f \n",i,fitness_prob[i]);
+    }
+    //Start genetic algorithm
 
     free_pool();
 
