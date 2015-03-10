@@ -290,6 +290,40 @@ float solve(char *str){
     return result;
 }
 
+void getMates(int * mate1, int * mate2){
+    //spin the wheel twice to get 2 mates
+    float rand1 = (float)get_rand(1000)*.001;
+    float rand2 = (float)get_rand(1000)*.001;
+    int i,found = 0;
+    printf("rand1 =%f rand2 =%f \n",rand1,rand2);
+
+    for(i=0 ; i < CHROMOSOME_NUM ; i++){
+        if(i == 0){
+            if(rand1 >= 0 && rand1 <= roulette[i]){
+                *mate1 = i;
+                found += 1;
+            }
+            if(rand2 >= 0 && rand2 <= roulette[i]){
+                *mate2 = i;
+                found += 1;
+            }
+        }
+        else{
+            if(rand1 >= roulette[i-1] && rand1 <= roulette[i]){
+                *mate1 = i;
+                found += 1;
+            }
+            if(rand2 >= roulette[i-1] && rand2 <= roulette[i]){
+                *mate2 = i;
+                found += 1;
+            }
+        }
+        if(found == 2)
+            return;
+    }
+
+}
+
 int main()
 {
     int i;
@@ -304,6 +338,12 @@ int main()
         printf("roulette[%d] = %f \n",i,roulette[i]);
     }
     //Start genetic algorithm
+
+    int mate1,mate2;
+
+    getMates(&mate1,&mate2);
+
+    printf("mate1 = %d mate2 =%d \n",mate1,mate2);
 
     free_pool();
 
