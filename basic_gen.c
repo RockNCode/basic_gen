@@ -59,11 +59,12 @@ char gene_values[14] = {
 };
 
 float fitness_score[CHROMOSOME_NUM];
-float fitness_prob[CHROMOSOME_NUM];
+
+float roulette[CHROMOSOME_NUM];
 
 char opera[9]={0};
 int soln_found = 0;
-float total_prob = 0;
+float total_score = 0;
 //function prototypes
 float solve(char *str);
 
@@ -137,27 +138,30 @@ float get_fitness(float target, float result){
     }
 
     fitness = 1.0f / (target - result );
-    total_prob += fitness;
+
     return fitness;
 }
 
 void assign_fitness(float target){
     int i;
     float res;
-    total_prob =0;
+    total_score =0;
     for(i=0; i < CHROMOSOME_NUM; i++){
         res = solve(chromosomepool[i]);
-        fitness_score[i] = get_fitness(target,res);
+        fitness_score[i] = fabs(get_fitness(target,res));
+        total_score += fitness_score[i];
     }
 
 }
 
+
 void assign_prob()
 {
     int i;
-
+    float previous_prob = 0.0;
     for(i=0; i < CHROMOSOME_NUM; i++){
-        fitness_prob[i] = fitness_score[i]/total_prob;
+        roulette[i] = previous_prob + fitness_score[i]/total_score;
+        previous_prob = roulette[i];
     }
 }
 
@@ -297,7 +301,7 @@ int main()
     }
     assign_prob();
     for (i=0; i<CHROMOSOME_NUM; i++){
-        printf("Fitness prob[%d] = %f \n",i,fitness_prob[i]);
+        printf("roulette[%d] = %f \n",i,roulette[i]);
     }
     //Start genetic algorithm
 
