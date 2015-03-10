@@ -168,6 +168,7 @@ void assign_prob()
 void swap(int index1, int index2, int start){
     int cpy_size =9*4-start;
     char temp[cpy_size];
+
     strncpy(temp,chromosomepool[index1] + start,cpy_size);
     strncpy(chromosomepool[index1] + start, chromosomepool[index2] + start, cpy_size);
     strncpy(chromosomepool[index2] + start, temp, cpy_size);
@@ -178,19 +179,22 @@ char* cross_over(char* chromosome1, char* chromosome2, int position){
 
 }
 
-void mutate(int index, int bitposition){
-    
-    char c_mutate = *(chromosomepool[index] + bitposition);
+void mutate_chromosome(int index){
+    int i;
+    int numberofbits = 9*4;
+    for(i = 0; i < numberofbits; i++){
+        char c_mutate = *(chromosomepool[index] + i);
+        float rand = (float)get_rand(10000)*.0001;
+        if( rand <= MUTATION_RATE ){ //probability of mutation is 1%
+            GEN_LOG("mutating bit %d of index %d \n",i,index);
+            if(c_mutate == '0')
+                c_mutate = '1';
+            else
+                c_mutate = '0';
 
-    if(c_mutate == '0')
-        c_mutate = '1';
-    else
-        c_mutate = '0';
-
-    memset(chromosomepool[index] + bitposition,c_mutate, 1 );
-}
-
-void natural_select(){
+            memset(chromosomepool[index] + i,c_mutate, 1 );
+        }
+    }
 }
 
 char decode(char * str){
@@ -339,11 +343,19 @@ int main()
     }
     //Start genetic algorithm
 
-    int mate1,mate2;
+    int mate1_index,mate2_index;
 
-    getMates(&mate1,&mate2);
+    getMates(&mate1_index,&mate2_index);
 
-    printf("mate1 = %d mate2 =%d \n",mate1,mate2);
+    printf("mate1 = %d mate2 =%d \n",mate1_index,mate2_index);
+
+    //swap(mate1_index,mate2_index,18);
+    printf(" %s \n",chromosomepool[0]);
+    //testing chromosome 0 for mutation
+    mutate_chromosome(0);
+
+    printf(" %s \n",chromosomepool[0]);
+    //printf(" %s \n",chromosomepool[1]);
 
     free_pool();
 
